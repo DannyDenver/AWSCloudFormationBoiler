@@ -35,6 +35,16 @@ Parameters:
         Type: String
         Default: 10.0.3.0/24
 
+    PrivateDBSubnet1CIDR:
+        Description: Please enter the IP range (CIDR notation) for the private Db subnet in the first Availability Zone
+        Type: String
+        Default: 10.0.4.0/24
+
+    PrivateDBSubnet2CIDR:
+        Description: Please enter the IP range (CIDR notation) for the private Db subnet in the second Availability Zone
+        Type: String
+        Default: 10.0.5.0/24
+
 Resources:
 
     VPC: 
@@ -102,6 +112,28 @@ Resources:
             Tags: 
                 - Key: Name 
                   Value: !Sub ${EnvironmentName} Private Subnet (AZ2)
+
+    DatabasePrivateSubnet1: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 0, !GetAZs '' ]
+            CidrBlock: !Ref PrivateDBSubnet1CIDR
+            MapPublicIpOnLaunch: false
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName} Private Database Subnet (AZ1)
+
+    DatabasePrivateSubnet2: 
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            AvailabilityZone: !Select [ 1, !GetAZs '' ]
+            CidrBlock: !Ref PrivateDBSubnet2CIDR
+            MapPublicIpOnLaunch: false
+            Tags: 
+                - Key: Name 
+                  Value: !Sub ${EnvironmentName} Private Database Subnet (AZ2)
 
     NatGateway1EIP:
         Type: AWS::EC2::EIP
@@ -259,3 +291,15 @@ Outputs:
         Value: !Ref PrivateSubnet2
         Export:
           Name: !Sub ${EnvironmentName}-PRI2-SN
+
+    PrivateDBSubnet1:
+        Description: A reference to the private database subnet in the 1st Availability Zone
+        Value: !Ref DatabasePrivateSubnet1
+        Export:
+          Name: !Sub ${EnvironmentName}-PRIDB1-SN
+
+    PrivateDBSubnet2: 
+        Description: A reference to the private database subnet in the 2nd Availability Zone
+        Value: !Ref DatabasePrivateSubnet2
+        Export:
+          Name: !Sub ${EnvironmentName}-PRIDB2-SN
