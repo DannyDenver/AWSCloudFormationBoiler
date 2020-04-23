@@ -142,3 +142,21 @@ Resources:
       VpcId: 
         Fn::ImportValue:
           Fn::Sub: "${EnvironmentName}-VPCID"
+  DbSecurityByEC2SecurityGroup:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties:
+      GroupDescription: Ingress for Amazon EC2 security group
+      EC2VpcId:
+        Fn::ImportValue:
+          Fn::Sub: "${EnvironmentName}-VPCID"        
+  MyDB: 
+    Type: AWS::RDS::DBInstance
+    Properties: 
+      DBSecurityGroups:
+      -  Ref: DbSecurityByEC2SecurityGroup
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t2.small
+      Engine: MySQL
+      MasterUsername: '{{resolve:ssm:username:1}}'
+      MasterUserPassword: '{{resolve:ssm:password:1}}'
+    DeletionPolicy: Snapshot
